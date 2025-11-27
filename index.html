@@ -1,49 +1,386 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Send Love ❤️</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lovebox Controller</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="apple-touch-icon" href="https://emojigraph.org/media/apple/red-heart_2764-fe0f.png">
+    <link rel="icon" href="https://emojigraph.org/media/apple/red-heart_2764-fe0f.png">
+
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #ffe6e6; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(255, 0, 50, 0.15); width: 80%; max-width: 400px; text-align: center; }
-        h1 { color: #ff3366; margin-bottom: 20px; }
-        textarea { width: 100%; height: 100px; padding: 10px; border: 2px solid #ffccd5; border-radius: 10px; resize: none; font-size: 16px; box-sizing: border-box; }
-        button { background: #ff3366; color: white; border: none; padding: 15px 30px; border-radius: 50px; font-size: 18px; margin-top: 20px; cursor: pointer; width: 100%; transition: transform 0.1s; }
-        button:active { transform: scale(0.95); }
+        /* --- 1. COLOR PALETTES --- */
+        :root {
+            /* DEFAULT: DARK THEME */
+            --primary: #ff4b6e;
+            --primary-dark: #d63353;
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --text-sub: #a0a0a0;
+            --input-bg: #2d2d2d;
+            --input-border: #333;
+            --file-area-bg: #2d2d2d;
+            --file-area-border: #444;
+            --shadow: rgba(0, 0, 0, 0.5);
+        }
+
+        [data-theme="light"] {
+            /* LIGHT THEME OVERRIDES */
+            --bg-color: #fff0f3;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --text-sub: #888;
+            --input-bg: #f8f9fa;
+            --input-border: #eee;
+            --file-area-bg: #fffafa;
+            --file-area-border: #ffccd5;
+            --shadow: rgba(255, 75, 110, 0.15);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .app-container {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 420px;
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px var(--shadow);
+            text-align: center;
+            position: relative;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* --- TOGGLE BUTTON --- */
+        .theme-switch {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+        .theme-switch:hover { transform: rotate(15deg); }
+
+        h1 {
+            color: var(--primary);
+            font-weight: 600;
+            margin-top: 10px;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        p.subtitle {
+            color: var(--text-sub);
+            font-size: 14px;
+            margin-bottom: 25px;
+            transition: color 0.3s ease;
+        }
+
+        .input-group { margin-bottom: 20px; text-align: left; }
+        
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-sub);
+            margin-bottom: 8px;
+            margin-left: 5px;
+            transition: color 0.3s ease;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 15px;
+            border: 2px solid transparent;
+            background: var(--input-bg);
+            color: var(--text-color);
+            border-radius: 16px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            resize: none;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            background: var(--card-bg);
+            border-color: var(--primary);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 16px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 75, 110, 0.3);
+            transition: transform 0.1s;
+        }
+
+        .btn:active { transform: scale(0.96); }
+        
+        /* Secondary button adapts to theme */
+        .btn-secondary { 
+            background: var(--input-bg); 
+            color: var(--text-color);
+            border: 1px solid var(--input-border);
+            box-shadow: none; 
+            margin-top: 15px; 
+        }
+        .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+
+        .custom-file-upload {
+            border: 2px dashed var(--file-area-border);
+            background: var(--file-area-bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .custom-file-upload:hover { border-color: var(--primary); }
+        .custom-file-upload span { font-size: 14px; color: var(--text-sub); }
+
+        input[type="file"] { display: none; }
+
+        #preview-container {
+            margin-top: 15px;
+            display: none;
+            padding: 10px;
+            background: var(--card-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 12px;
+        }
+
+        #preview { width: 100%; border-radius: 8px; image-rendering: pixelated; }
+        
+        .divider {
+            height: 1px;
+            background: var(--input-border);
+            margin: 30px 0;
+            position: relative;
+        }
+        .divider::after {
+            content: "OR";
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card-bg);
+            padding: 0 10px;
+            color: var(--text-sub);
+            font-size: 12px;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
     </style>
 </head>
 <body>
-    <div class="card">
+
+    <div class="app-container">
+        <button class="theme-switch" id="theme-toggle" onclick="toggleTheme()">
+            🌙
+        </button>
+
         <h1>Send Love ❤️</h1>
-        <textarea id="msg" placeholder="Type a sweet message..."></textarea>
-        <button onclick="sendLove()">Send to Box</button>
+        <p class="subtitle">Control Panel for Her Lovebox</p>
+
+        <div class="input-group">
+            <label>MESSAGE</label>
+            <textarea id="msg" placeholder="Write something sweet..."></textarea>
+        </div>
+        <button class="btn" onclick="sendText()">
+            <span>Send Message</span>
+        </button>
+
+        <div class="divider"></div>
+
+        <div class="input-group">
+            <label>PHOTO (Black & White Preview)</label>
+            <label for="upload" class="custom-file-upload">
+                <div style="font-size: 24px; margin-bottom: 5px;">📸</div>
+                <span id="file-label">Tap to choose a photo</span>
+            </label>
+            <input type="file" id="upload" accept="image/*">
+            
+            <div id="preview-container">
+                <img id="preview" src="">
+                <div style="font-size: 12px; color: #777; margin-top: 5px;">Preview on box</div>
+            </div>
+        </div>
+
+        <button class="btn btn-secondary" onclick="sendImage()">
+            <span>Send Photo</span>
+        </button>
+        
+        <canvas id="canvas" width="128" height="48" style="display:none;"></canvas>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+        import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
+        // --- ⬇️ PASTE YOUR KEYS HERE ⬇️ ---
         const firebaseConfig = {
             apiKey: "AIzaSyBYJt9-Bk9PW898173PyPbHP7kq6maFdcU",
             databaseURL: "https://lovebox-675f3-default-rtdb.asia-southeast1.firebasedatabase.app/" 
-            // Note: In HTML JS, you MUST include https://
         };
+        // ----------------------------------
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const preview = document.getElementById('preview');
+        const previewContainer = document.getElementById('preview-container');
+        const fileLabel = document.getElementById('file-label');
 
-        window.sendLove = function() {
-            const text = document.getElementById("msg").value;
-            if(!text) return alert("Type something!");
+        // --- THEME LOGIC ---
+        window.toggleTheme = function() {
+            const html = document.documentElement;
+            const btn = document.getElementById('theme-toggle');
+            
+            if (html.getAttribute('data-theme') === 'light') {
+                html.removeAttribute('data-theme');
+                btn.innerText = '🌙'; // Icon for Dark Mode
+                localStorage.setItem('theme', 'dark');
+            } else {
+                html.setAttribute('data-theme', 'light');
+                btn.innerText = '☀️'; // Icon for Light Mode
+                localStorage.setItem('theme', 'light');
+            }
+        }
 
-            set(ref(db, 'lovebox'), {
-                message: text,
-                unread: true
-            }).then(() => {
-                alert("Sent! ❤️");
-                document.getElementById("msg").value = "";
-            }).catch((error) => {
-                alert("Error: " + error.message);
+        // Check saved preference on load
+        if (localStorage.getItem('theme') === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+            document.getElementById('theme-toggle').innerText = '☀️';
+        }
+
+        // --- IMAGE PROCESSING ---
+        document.getElementById('upload').addEventListener('change', function(e) {
+            if(e.target.files.length > 0) {
+                fileLabel.textContent = e.target.files[0].name;
+            }
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    ctx.fillStyle = "black";
+                    ctx.fillRect(0, 0, 128, 48);
+                    const scale = Math.min(128 / img.width, 48 / img.height);
+                    const x = (128 / 2) - (img.width / 2) * scale;
+                    const y = (48 / 2) - (img.height / 2) * scale;
+                    ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+                    processImage();
+                }
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(e.target.files[0]);
+        });
+
+        // --- DITHERING ---
+        function processImage() {
+            const imgData = ctx.getImageData(0, 0, 128, 48);
+            const data = imgData.data;
+            for (let y = 0; y < 48; y++) {
+                for (let x = 0; x < 128; x++) {
+                    const i = (y * 128 + x) * 4;
+                    const brightness = (data[i] + data[i+1] + data[i+2]) / 3;
+                    const newPixel = brightness < 128 ? 0 : 255;
+                    data[i] = data[i+1] = data[i+2] = newPixel;
+                    const error = brightness - newPixel;
+                    if (x + 1 < 128) data[((y * 128 + x + 1) * 4)] += error * 7 / 16;
+                    if (x - 1 >= 0 && y + 1 < 48) data[((y + 1) * 128 + x - 1) * 4] += error * 3 / 16;
+                    if (y + 1 < 48) data[((y + 1) * 128 + x) * 4] += error * 5 / 16;
+                    if (x + 1 < 128 && y + 1 < 48) data[((y + 1) * 128 + x + 1) * 4] += error * 1 / 16;
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+            preview.src = canvas.toDataURL();
+            previewContainer.style.display = "block";
+        }
+
+        // --- HEX CONVERSION ---
+        function getHexString() {
+            const imgData = ctx.getImageData(0, 0, 128, 48);
+            const pixels = imgData.data;
+            let hexString = "";
+            let byte = 0;
+            let bitCounter = 0;
+            for (let i = 0; i < 128 * 48; i++) {
+                if (pixels[i * 4] > 128) byte |= (1 << (7 - bitCounter));
+                bitCounter++;
+                if (bitCounter === 8) {
+                    hexString += byte.toString(16).padStart(2, '0');
+                    byte = 0;
+                    bitCounter = 0;
+                }
+            }
+            return hexString;
+        }
+
+        // --- SENDING LOGIC ---
+        window.sendText = function() {
+            const msg = document.getElementById("msg").value;
+            if(!msg) return alert("Please type a message first!");
+            const btn = document.querySelector(".btn");
+            const originalText = btn.innerHTML;
+            btn.innerHTML = "Sending... 🚀";
+            
+            update(ref(db, 'lovebox'), { type: "text", message: msg, unread: true, thinking: false })
+            .then(() => {
+                btn.innerHTML = "Sent! ❤️";
+                setTimeout(() => { 
+                    btn.innerHTML = originalText; 
+                    document.getElementById("msg").value = "";
+                }, 2000);
+            });
+        }
+
+        window.sendImage = function() {
+            if(preview.src == "") return alert("Please select an image first!");
+            const btn = document.querySelector(".btn-secondary");
+            const originalText = btn.innerHTML;
+            btn.innerHTML = "Uploading... ⏳";
+            const hex = getHexString();
+            update(ref(db, 'lovebox'), { type: "image", imageData: hex, unread: true, thinking: false })
+            .then(() => {
+                btn.innerHTML = "Sent! 📸";
+                setTimeout(() => btn.innerHTML = originalText, 2000);
             });
         }
     </script>
